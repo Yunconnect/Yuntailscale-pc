@@ -1,33 +1,21 @@
-- name: Build yuntailscale.exe (极致瘦身 - 稳定版)
+- name: Build yuntailscale.exe
   run: |
     cd cmd/tailscale
-    
-    # 保守但高效的编译优化
     CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build \
-      -ldflags="-s -w -H=windowsgui -extldflags '-static' -X main.version=${{ steps.version.outputs.version }}" \
-      -gcflags="all=-l" \
+      -ldflags="-s -w -H=windowsgui -extldflags '-static'" \
       -trimpath \
       -o ../../yuntailscale_tmp.exe .
-    
     cd ../..
-    
-    # UPX 压缩（使用稳定参数）
     upx --best --lzma yuntailscale_tmp.exe -o yuntailscale.exe
     rm yuntailscale_tmp.exe
 
-- name: Build yuntailscaled.exe (极致瘦身 - 稳定版)
+- name: Build yuntailscaled.exe
   run: |
     cd cmd/tailscaled
-    
-    # 保守但高效的编译优化
     CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build \
-      -ldflags="-s -w -extldflags '-static' -X main.version=${{ steps.version.outputs.version }}" \
-      -gcflags="all=-l" \
+      -ldflags="-s -w -extldflags '-static'" \
       -trimpath \
       -o ../../yuntailscaled_tmp.exe .
-    
     cd ../..
-    
-    # UPX 压缩（使用稳定参数）
     upx --best --lzma yuntailscaled_tmp.exe -o yuntailscaled.exe
     rm yuntailscaled_tmp.exe
