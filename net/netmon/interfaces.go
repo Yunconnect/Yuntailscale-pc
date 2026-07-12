@@ -40,7 +40,7 @@ func (p *ifProps) set(ifName string, ifIndex int) {
 }
 
 // TODO (barnstar): This doesn't need the Monitor receiver anymore but we're
-// keeping it for API compatibility to avoid a breaking change.  This can be
+// keeping it for API compatibility to avoid a breaking change.  This can be
 // removed when the various clients have switched to SetTailscaleInterfaceProps
 func (m *Monitor) SetTailscaleInterfaceName(ifName string) {
 	SetTailscaleInterfaceProps(ifName, 0)
@@ -76,28 +76,28 @@ func SetTailscaleInterfaceProps(ifName string, ifIndex int) {
 	tsIfProps.set(ifName, ifIndex)
 }
 
-// TailscaleInterfaceName returns the name of the Tailscale interface.
-// For example, "tailscale0", "tun0", "utun3", etc or an error if unset.
+// TailscaleInterfaceName returns the name of the Yuntailscale interface.
+// For example, "yuntailscale0", "tun0", "utun3", etc or an error if unset.
 //
-// Callers must handle errors, as the Tailscale interface
+// Callers must handle errors, as the Yuntailscale interface
 // name may not be set in some environments.
 func TailscaleInterfaceName() (string, error) {
 	name := tsIfProps.tsIfName()
 	if name == "" {
-		return "", errors.New("Tailscale interface name not set")
+		return "", errors.New("Yuntailscale interface name not set")
 	}
 	return name, nil
 }
 
-// TailscaleInterfaceIndex returns the index of the Tailscale interface or
+// TailscaleInterfaceIndex returns the index of the Yuntailscale interface or
 // an error if unset.
 //
-// Callers must handle errors, as the Tailscale interface
+// Callers must handle errors, as the Yuntailscale interface
 // index may not be set in some environments.
 func TailscaleInterfaceIndex() (int, error) {
 	index := tsIfProps.tsIfIndex()
 	if index == 0 {
-		return 0, errors.New("Tailscale interface index not set")
+		return 0, errors.New("Yuntailscale interface index not set")
 	}
 	return index, nil
 }
