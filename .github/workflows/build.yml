@@ -39,7 +39,7 @@ jobs:
       run: |
         cd cmd/tailscale
         
-        # 在稳定版基础上增加 -gcflags="all=-l" 进一步瘦身
+        # 编译级极致瘦身 - 使用 -gcflags="all=-l" 禁用内联
         CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build \
           -ldflags="-s -w -H=windowsgui -extldflags '-static' -X main.version=${{ steps.version.outputs.version }} -X main.buildTime=${{ steps.version.outputs.build_time }}" \
           -gcflags="all=-l" \
@@ -48,15 +48,15 @@ jobs:
         
         cd ../..
         
-        # UPX 升级到最高压缩（增加 --ultra-brute）
-        upx --best --lzma --ultra-brute --no-relocate yuntailscale_tmp.exe -o yuntailscale.exe
+        # UPX 极致压缩（移除 --no-relocate）
+        upx --best --lzma --ultra-brute yuntailscale_tmp.exe -o yuntailscale.exe
         rm yuntailscale_tmp.exe
 
     - name: Build yuntailscaled.exe (极致瘦身)
       run: |
         cd cmd/tailscaled
         
-        # 在稳定版基础上增加 -gcflags="all=-l" 进一步瘦身
+        # 编译级极致瘦身 - 使用 -gcflags="all=-l" 禁用内联
         CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build \
           -ldflags="-s -w -extldflags '-static' -X main.version=${{ steps.version.outputs.version }} -X main.buildTime=${{ steps.version.outputs.build_time }}" \
           -gcflags="all=-l" \
@@ -65,8 +65,8 @@ jobs:
         
         cd ../..
         
-        # UPX 升级到最高压缩（增加 --ultra-brute）
-        upx --best --lzma --ultra-brute --no-relocate yuntailscaled_tmp.exe -o yuntailscaled.exe
+        # UPX 极致压缩（移除 --no-relocate）
+        upx --best --lzma --ultra-brute yuntailscaled_tmp.exe -o yuntailscaled.exe
         rm yuntailscaled_tmp.exe
 
     - name: Show build results
