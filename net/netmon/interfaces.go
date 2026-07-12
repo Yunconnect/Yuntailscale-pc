@@ -6,6 +6,7 @@ package netmon
 import (
 	"errors"
 	"net"
+	"strings"
 
 	"tailscale.com/syncs"
 )
@@ -100,4 +101,27 @@ func TailscaleInterfaceIndex() (int, error) {
 		return 0, errors.New("Yuntailscale interface index not set")
 	}
 	return index, nil
+}
+
+// maybeTailscaleInterfaceName reports whether s is a name of a Tailscale
+// network interface.
+func maybeTailscaleInterfaceName(s string) bool {
+	if s == "" {
+		return false
+	}
+	return s == "Yuntailscale" ||
+		strings.HasPrefix(s, "wg") ||
+		strings.HasPrefix(s, "ts") ||
+		strings.HasPrefix(s, "yuntailscale") ||
+		strings.HasPrefix(s, "utun")
+}
+
+// isTailscaleInterfaceByName reports whether name is a Tailscale network interface.
+func isTailscaleInterfaceByName(name string) bool {
+	if name == "" {
+		return false
+	}
+	return name == "Yuntailscale" ||
+		strings.HasPrefix(name, "yuntailscale") ||
+		strings.HasPrefix(name, "utun")
 }
