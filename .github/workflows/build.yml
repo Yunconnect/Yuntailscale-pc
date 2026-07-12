@@ -13,30 +13,94 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.26.3' # 使用 Go 1.26.3
+        go-version: '1.21.13'  # 使用稳定版本
+        cache: true
 
-    - name: Build yuntailscale.exe
+    - name: Install UPX
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y upx
+
+    - name: Get version info
+      id: version
+      run: |
+        VERSION=$(git describe --tags --always --dirty 2>/dev/null || echo "dev")
+        BUILD_TIME=$(date -u '+%Y-%m-%d_%H:%M:%S')
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "build_time=$BUILD_TIME" >> $GITHUB_OUTPUT
+
+    - name: Build yuntailscale.exe (极致瘦身)
       run: |
         cd cmd/tailscale
-        GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o ../../yuntailscale.exe .
+        
+        # 1. 编译级极致瘦身
+        CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build \
+          -ldflags="-s -w -H=windowsgui -extldflags '-static' -X main.version=${{ steps.version.outputs.version }} -X main.buildTime=${{ steps.version.outputs.build_time }}" \
+          -gcflags="all=-l -B -dwarflocationlists=0" \
+          -asmflags="all=-dynlink=0" \
+          -trimpath \
+          -o ../../yuntailscale_tmp.exe .
+        
+        cd ../..
+        
+        # 2. UPX 外科手术级压缩
+        upx --best --lzma --ultra-brute --no-relocate yuntailscale_tmp.exe -o yuntailscale.exe
+        
+        # 3. 清理临时文件
+        rm yuntailscale_tmp.exe
 
-    - name: Build yuntailscaled.exe
+    - name: Build yuntailscaled.exe (极致瘦身)
       run: |
         cd cmd/tailscaled
-        GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o ../../yuntailscaled.exe .
+        
+        # 1. 编译级极致瘦身
+        CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build \
+          -ldflags="-s -w -extldflags '-static' -X main.version=${{ steps.version.outputs.version }} -X main.buildTime=${{ steps.version.outputs.build_time }}" \
+          -gcflags="all=-l -B -dwarflocationlists=0" \
+          -asmflags="all=-dynlink=0" \
+          -trimpath \
+          -o ../../yuntailscaled_tmp.exe .
+        
+        cd ../..
+        
+        # 2. UPX 外科手术级压缩
+        upx --best --lzma --ultra-brute --no-relocate yuntailscaled_tmp.exe -o yuntailscaled.exe
+        
+        # 3. 清理临时文件
+        rm yuntailscaled_tmp.exe
+
+    - name: Show build results
+      run: |
+        echo "=========================================="
+        echo "  极致瘦身编译成果"
+        echo "=========================================="
+        echo ""
+        echo "📦 文件大小:"
+        ls -lh yuntailscale.exe yuntailscaled.exe
+        echo ""
+        echo "🔐 SHA256 校验和:"
+        sha256sum yuntailscale.exe yuntailscaled.exe
+        echo ""
+        echo "✅ UPX 完整性验证:"
+        upx -t yuntailscale.exe && echo "  ✓ yuntailscale.exe 验证通过"
+        upx -t yuntailscaled.exe && echo "  ✓ yuntailscaled.exe 验证通过"
 
     - name: Upload yuntailscale.exe
       uses: actions/upload-artifact@v4
       with:
         name: yuntailscale-client
         path: yuntailscale.exe
+        compression-level: 0  # 不重复压缩
 
     - name: Upload yuntailscaled.exe
       uses: actions/upload-artifact@v4
       with:
         name: yuntailscale-daemon
         path: yuntailscaled.exe
+        compression-level: 0  # 不重复压缩
