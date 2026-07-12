@@ -23,6 +23,7 @@ import (
 
 	shellquote "github.com/kballard/go-shellquote"
 	"github.com/peterbourgon/ff/v3/ffcli"
+	"github.com/toqueteos/webbrowser"
 	"tailscale.com/feature/buildfeatures"
 	_ "tailscale.com/feature/condregister/awsparamstore"
 	_ "tailscale.com/feature/condregister/identityfederation"
@@ -775,6 +776,7 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 					}
 				} else {
 					fmt.Fprintf(Stderr, "\nTo authenticate, visit:\n\n\t%s\n\n", authURL)
+					if runtime.GOOS == "windows" { go webbrowser.Open(*url) }
 					if upArgs.qr && buildfeatures.HasQRCodes {
 						_, err := qrcodes.Fprintln(Stderr, qrcodes.Format(upArgs.qrFormat), authURL)
 						if err != nil {
