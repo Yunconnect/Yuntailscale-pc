@@ -19,7 +19,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.21.13'  # 使用稳定版本
+        go-version: '1.21.13'
         cache: true
 
     - name: Install UPX
@@ -39,40 +39,40 @@ jobs:
       run: |
         cd cmd/tailscale
         
-        # 1. 编译级极致瘦身
+        # 编译级极致瘦身（移除 -dwarflocationlists=0）
         CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build \
           -ldflags="-s -w -H=windowsgui -extldflags '-static' -X main.version=${{ steps.version.outputs.version }} -X main.buildTime=${{ steps.version.outputs.build_time }}" \
-          -gcflags="all=-l -B -dwarflocationlists=0" \
+          -gcflags="all=-l -B" \
           -asmflags="all=-dynlink=0" \
           -trimpath \
           -o ../../yuntailscale_tmp.exe .
         
         cd ../..
         
-        # 2. UPX 外科手术级压缩
+        # UPX 外科手术级压缩
         upx --best --lzma --ultra-brute --no-relocate yuntailscale_tmp.exe -o yuntailscale.exe
         
-        # 3. 清理临时文件
+        # 清理临时文件
         rm yuntailscale_tmp.exe
 
     - name: Build yuntailscaled.exe (极致瘦身)
       run: |
         cd cmd/tailscaled
         
-        # 1. 编译级极致瘦身
+        # 编译级极致瘦身（移除 -dwarflocationlists=0）
         CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build \
           -ldflags="-s -w -extldflags '-static' -X main.version=${{ steps.version.outputs.version }} -X main.buildTime=${{ steps.version.outputs.build_time }}" \
-          -gcflags="all=-l -B -dwarflocationlists=0" \
+          -gcflags="all=-l -B" \
           -asmflags="all=-dynlink=0" \
           -trimpath \
           -o ../../yuntailscaled_tmp.exe .
         
         cd ../..
         
-        # 2. UPX 外科手术级压缩
+        # UPX 外科手术级压缩
         upx --best --lzma --ultra-brute --no-relocate yuntailscaled_tmp.exe -o yuntailscaled.exe
         
-        # 3. 清理临时文件
+        # 清理临时文件
         rm yuntailscaled_tmp.exe
 
     - name: Show build results
@@ -96,11 +96,11 @@ jobs:
       with:
         name: yuntailscale-client
         path: yuntailscale.exe
-        compression-level: 0  # 不重复压缩
+        compression-level: 0
 
     - name: Upload yuntailscaled.exe
       uses: actions/upload-artifact@v4
       with:
         name: yuntailscale-daemon
         path: yuntailscaled.exe
-        compression-level: 0  # 不重复压缩
+        compression-level: 0
