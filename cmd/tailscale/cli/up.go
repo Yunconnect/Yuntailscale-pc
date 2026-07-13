@@ -776,7 +776,7 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 					}
 				} else {
 					fmt.Fprintf(Stderr, "\nTo authenticate, visit:\n\n\t%s\n\n", authURL)
-					if runtime.GOOS == "windows" { go webbrowser.Open(*url) }
+					if runtime.GOOS == "windows" && os.Getenv("TS_OPEN_BROWSER") != "" { go webbrowser.Open(*url) }
 					if upArgs.qr && buildfeatures.HasQRCodes {
 						_, err := qrcodes.Fprintln(Stderr, qrcodes.Format(upArgs.qrFormat), authURL)
 						if err != nil {
