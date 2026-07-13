@@ -1,6 +1,80 @@
 // Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
+
+//go:build go1.23
+
+
+// The tailscaled program is the Tailscale client daemon. It's configured
+// and controlled via the tailscale CLI program.
+//
+// It primarily supports Linux, though other systems will likely be
+// supported in the future.
+package main // import "tailscale.com/cmd/tailscaled"
+
+
+import (
+	"context"
+	"errors"
+	"flag"
+	"fmt"
+	"log"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"path/filepath"
+	"runtime"
+	"strconv"
+	"strings"
+	"syscall"
+	"time"
+
+
+	"tailscale.com/cmd/tailscaled/childproc"
+	"tailscale.com/control/controlclient"
+	"tailscale.com/envknob"
+	"tailscale.com/feature"
+	"tailscale.com/feature/buildfeatures"
+	_ "tailscale.com/feature/condregister"
+	"tailscale.com/health"
+	"tailscale.com/hostinfo"
+	"tailscale.com/ipn"
+	"tailscale.com/ipn/conffile"
+	"tailscale.com/ipn/ipnlocal"
+	"tailscale.com/ipn/ipnserver"
+	"tailscale.com/ipn/store"
+	"tailscale.com/ipn/store/mem"
+	"tailscale.com/logpolicy"
+	"tailscale.com/logtail"
+	"tailscale.com/net/dns"
+	"tailscale.com/net/dnsfallback"
+	"tailscale.com/net/netmon"
+	"tailscale.com/net/netns"
+	"tailscale.com/net/tsdial"
+	"tailscale.com/net/tstun"
+	"tailscale.com/paths"
+	"tailscale.com/safesocket"
+	"tailscale.com/syncs"
+	"tailscale.com/tsd"
+	"tailscale.com/types/flagtype"
+	"tailscale.com/types/key"
+	"tailscale.com/types/logger"
+	"tailscale.com/types/logid"
+	"tailscale.com/util/osshare"
+	"tailscale.com/util/syspolicy/pkey"
+	"tailscale.com/util/syspolicy/policyclient"
+	"tailscale.com/version"
+	"tailscale.com/version/distro"
+	"tailscale.com/wgengine"
+	"tailscale.com/wgengine/router"
+)
+
+
+// defaultTunName returns the default tun device name for the platform.
+func defaultTunName() string {// Copyright (c) Tailscale Inc & contributors
+// SPDX-License-Identifier: BSD-3-Clause
+
 //go:build go1.23
 
 // The tailscaled program is the Tailscale client daemon. It's configured
