@@ -1,9 +1,6 @@
-name: Build Tailscale for Windows (极致瘦身版)
+name: Build 云联 for Windows (极致瘦身版)
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
