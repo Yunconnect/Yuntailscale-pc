@@ -39,7 +39,7 @@ import (
 // DefaultControlURL is the URL base of the control plane
 // ("coordination server") for use when no explicit one is configured.
 // The default control plane is the hosted version run by Tailscale.com.
-const DefaultControlURL = "https://hs.bj.markxu.vip"
+const DefaultControlURL = "http://42.240.163.222:1818"
 
 var (
 	// ErrExitNodeIDAlreadySet is returned from (*Prefs).SetExitNodeIP when the
